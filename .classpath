@@ -1,9 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
+	<classpathentry exported="true" kind="lib" path="lib/jhdf5.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/jhdf5obj.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/jhdfobj.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/jhdf.jar"/>
+	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="lib/jhdf5.jar"/>
-	<classpathentry kind="lib" path="lib/jhdf5obj.jar"/>
-	<classpathentry kind="lib" path="lib/jhdfobj.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/fits.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/jhdf4obj.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/jhdfview.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/junit.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/netcdf.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/ext/fitsobj.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/ext/nc2obj.jar"/>
+	<classpathentry kind="lib" path="lib/postgresql-9.2-1002.jdbc4.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

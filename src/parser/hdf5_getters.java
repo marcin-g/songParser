@@ -559,7 +559,7 @@ public class hdf5_getters
 
     public static void main(String[] args)
     {
-	if (args.length < 1)
+	/*if (args.length < 1)
 	    {
 		System.out.println("file 'hdf5_getters.java'");
 		System.out.println("T. Bertin-Mahieux (2010) tb2332@columbia.edu");
@@ -569,8 +569,8 @@ public class hdf5_getters
 		System.out.println("   see README.txt to compile");
 		System.out.println("   java hdf5_getters <some HDF5 song file>");
 		System.exit(0);
-	    }
-	String filename = args[0];
+	    }*/
+	String filename = "D:\\millionsongsubset_full\\A\\A\\A\\A\\TRAAAJN128F428E437.h5";
 	System.out.println("file: " + filename);
 	H5File h5 = hdf5_open_readonly(filename);
 	int nSongs = get_num_songs(h5);
