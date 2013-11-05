@@ -4,11 +4,12 @@ import java.sql.SQLException;
 
 public class SongBatch extends AbstractBatch {
 
-	String sql = "INSERT INTO TRACKS(track_id,song_id,title,artist_id,artist_name,artist_location,artist_hotttnesss,artist_familiarity,danceability,duration,energy,release,song_hotttnesss,year) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+	String sql = "INSERT INTO TRACKS(track_id,song_id,title,artist_id,artist_name,artist_location,artist_hotttnesss,artist_familiarity,danceability,duration,energy,release,release_7digitalid, song_hotttnesss,year) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
 	public void addRecord(String track_id, String song_id, String title, String artist_id, String artist_name,
 			String artist_location, double artist_hotttnesss, double artist_familiarity, double danceability,
-			double duration, double energy, String release, double song_hotttnesss, int year) throws SQLException {
+			double duration, double energy, String release, int release_7digitalid, double song_hotttnesss, int year)
+			throws SQLException {
 		if (recordsCounter == 0) {
 			statement = connection.prepareStatement(sql);
 		}
@@ -24,8 +25,9 @@ public class SongBatch extends AbstractBatch {
 		statement.setDouble(10, duration);
 		statement.setDouble(11, energy);
 		statement.setString(12, release);
-		statement.setDouble(13, song_hotttnesss);
-		statement.setInt(14, year);
+		statement.setInt(13, release_7digitalid);
+		statement.setDouble(14, song_hotttnesss);
+		statement.setInt(15, year);
 		statement.addBatch();
 		recordsCounter++;
 		if (recordsCounter == MAX_COUNTER) {
