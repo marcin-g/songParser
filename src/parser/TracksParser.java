@@ -42,7 +42,7 @@ public class TracksParser {
 						// System.out.println(split[x]);
 						String path = getPath(split[x]);
 						// System.out.println(path);
-						if (path.charAt(0) == 'A')
+						if (path.charAt(0) == 'U' || path.charAt(0) == 'X' || path.charAt(0) == 'Y' || path.charAt(0) == 'Z')
 							doSomething(DataPath + path);
 					}
 				}
@@ -77,7 +77,7 @@ public class TracksParser {
 	private static void doSomething(String string) throws Exception {
 		long startH5 = System.nanoTime();
 		ile++;
-		if (ile % 10 == 0)
+		if (ile % 1000 == 0)
 			System.out.println(ile + " / " + ile_all);
 		// TODO Auto-generated method stub
 		H5File h5 = getter.hdf5_open_readonly(string);
