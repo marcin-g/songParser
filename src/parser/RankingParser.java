@@ -14,7 +14,7 @@ public class RankingParser {
 	static long start=0;
 	public static void main(String[] args) throws Exception {
 		BufferedReader br1 = new BufferedReader(new FileReader(
-				"res/triplets_100_song_ranking.csv"));
+				"res/100songtriplets.csv"));
 		//train_triplets
 		//kaggle_visible_evaluation_triplets
 		start = System.nanoTime();    
@@ -25,6 +25,7 @@ public class RankingParser {
 			while (line != null) {
 				String[] split = line.split(";");
 				batch.addRecord(split);
+				line = br1.readLine();
 			}
 			//map.put("3e9f26065c645dd00179ba5016f337d", 0);
 			

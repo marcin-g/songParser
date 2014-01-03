@@ -10,7 +10,7 @@ public abstract class AbstractBatch {
 	protected Connection connection = null;
 	protected PreparedStatement statement = null;
 	protected int recordsCounter = 0;
-	protected static int MAX_COUNTER = 10000;
+	protected static int MAX_COUNTER = 1000;
 	protected int summaryCount = 0;
 
 	public AbstractBatch() {

@@ -13,7 +13,7 @@ public class ReportMapBatch extends AbstractBatch {
 		if (recordsCounter == 0) {
 			standardStatement=connection.createStatement();
 		}
-		standardStatement.addBatch("UPDATE REPORT_MAP SET ID_"+songId+"=1 WHERE USER_ID="+userId);
+		standardStatement.addBatch("UPDATE PROPER_REPORT_MAP SET ID_"+songId+"=1 WHERE USER_ID="+userId);
 
 		recordsCounter++;
 		if (recordsCounter == MAX_COUNTER) {
