@@ -10,7 +10,7 @@ import postgres.HistoryBatch;
 
 public class TripletsParser {
 	public static void main(String[] args) throws Exception {
-		HistoryBatch batch=new  HistoryBatch();
+		//HistoryBatch batch=new  HistoryBatch();
 		BufferedReader br1 = new BufferedReader(new FileReader(
 				"res/users.csv"));
 		//train_triplets
@@ -55,20 +55,20 @@ public class TripletsParser {
 				"res/kaggle_visible_evaluation_triplets_new.csv"));
 		//kaggle_visible_evaluation_triplets
 		//song_train_triplets
-		long id=48373587;
+		//long id=48373587;
 		try {
 			String line = br.readLine();
 			while (line != null) {
 				String[] split = line.split("\t");
 				
-					wr.write(id+","+map.get(split[0]).toString()+","+songmap.get(split[1])+","+split[2]+"\n");
-				id++;
+					wr.write(split[0]+","+songmap.get(split[1])+","+split[2]+"\n");
+				//id++;
 				
 				line = br.readLine();
 			}
 		} finally {
 			long elapsedTime = System.nanoTime() - start;
-			System.out.println("wykonano w: "+elapsedTime+" "+id);
+			System.out.println("wykonano w: "+elapsedTime);
 			wr.close();
 			br.close();
 		}
