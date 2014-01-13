@@ -14,5 +14,6 @@
 	<classpathentry exported="true" kind="lib" path="lib/ext/fitsobj.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/ext/nc2obj.jar"/>
 	<classpathentry kind="lib" path="lib/postgresql-9.2-1002.jdbc4.jar"/>
+	<classpathentry kind="lib" path="lib/guava-15.0.jar" sourcepath="C:/Users/Marcin/.m2/repository/com/google/guava/guava/15.0/guava-15.0-sources.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

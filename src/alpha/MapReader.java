@@ -10,8 +10,13 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.TreeMap;
 
+import com.google.common.collect.Multisets;
+import com.google.common.collect.SortedMultiset;
+import com.google.common.collect.TreeMultiset;
+
 public class MapReader {
 
+	static SortedMultiset<Integer> resultSet=null;
 	private static void incrementValue(Map<String, Integer> counters,
 			String toAdd) {
 		Integer currValue = counters.get(toAdd);
@@ -37,7 +42,7 @@ public class MapReader {
 				String[] split = line.split(";");
 				LinkedList<Integer> list = new LinkedList<>();
 				for (int i = 1; i < split.length; i++) {
-					list.add(new Integer(split[i]));
+					list.add(Integer.parseInt(split[i]));
 				}
 				map.put(split[0], list);
 
@@ -54,46 +59,69 @@ public class MapReader {
 			br1.close();
 
 			br2 = new BufferedReader(new FileReader(
-					"res/kaggle_visible_evaluation_triplets_new.csv"));
+					"res/one.csv"));
 			line = br2.readLine();
 			String currentUser = "";
 			
 			HashMap<String, Integer> resultMap = null;
-			wr = new BufferedWriter(new FileWriter("res/results.csv"));
 			j = 0;
+			wr = new BufferedWriter(new FileWriter("res/resultsOne"+j+".csv"));
+			start=System.currentTimeMillis();
 			while (line != null) {
 				String[] split = line.split(",");
 				if (!split[0].equals(currentUser)) {
-					if (resultMap != null) {
+					if (resultSet != null) {
 
-						ValueComparator bvc = new ValueComparator(resultMap);
+						/*ValueComparator bvc = new ValueComparator(resultMap);
 						TreeMap<String, Integer> sorted_map = new TreeMap<String, Integer>(
 								bvc);
-						sorted_map.putAll(resultMap);
+						sorted_map.putAll(resultMap);*/
 						StringBuilder builder=new StringBuilder();
 						builder.append(currentUser);
 						builder.append(";");
 						int i=0;
-						for (String key : sorted_map.descendingKeySet()) {
-							builder.append(key);
-							builder.append(";");
-							if(++i>=50) break;
+						TreeMultiset<Integer> finalSet=TreeMultiset.create(new ValueComparator());
+						finalSet.addAll(resultSet);
+						int currentKey=-1;
+						int count=-1;
+						for (Integer key : finalSet.descendingMultiset()) {
+							if(key!=currentKey){
+								builder.append(key);
+							/*	builder.append("-");
+								builder.append(count);*/
+								builder.append(";");
+								i++;
+								currentKey=key;
+								count=0;
+							}
+							if(i>=100) break;
+							count++;
 						}
+						builder.append("\n");
 						wr.append(builder.toString());
 						j++;
-						System.out.println(j);
+						if(j%2000==0){
+
+							System.out.println("Obliczono "+j+" w "+(System.currentTimeMillis()-start));
+							
+							wr.close();
+							wr = new BufferedWriter(new FileWriter("res/results"+j+".csv"));
+							//break;
+						}
 						/*System.out.println(currentUser + ";"
 								+ resultMap.toString() + "\n");*/
 					}
-					resultMap = new HashMap<>();
+					//resultMap = new HashMap<>();
+					resultSet=TreeMultiset.create();
 					currentUser = split[0];
 				}
 				LinkedList<Integer> list = map.get(split[1]);
 				if (list != null) {
-					for (int i = 1; i < list.size(); i++) {
+					resultSet.addAll(list);
+				/*	for (int i = 1; i < list.size(); i++) {
 						//incrementValue(resultMap, list.get(i).toString());
 					}
-
+*/
 				}
 				// System.out.println(split);
 				/*j++;
@@ -104,24 +132,16 @@ public class MapReader {
 			}
 			br2.close();
 			wr.close();
-
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 
-	static class ValueComparator implements Comparator<String> {
-
-		Map<String, Integer> base;
-
-		public ValueComparator(Map<String, Integer> base) {
-			this.base = base;
-		}
-
+	static class ValueComparator implements Comparator<Integer> {
 		// Note: this comparator imposes orderings that are inconsistent with
 		// equals.
-		public int compare(String a, String b) {
-			if (base.get(a) >= base.get(b)) {
+		public int compare(Integer a, Integer b) {
+			if (resultSet.count(a)<resultSet.count(b)) {
 				return -1;
 			} else {
 				return 1;

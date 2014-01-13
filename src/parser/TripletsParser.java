@@ -52,17 +52,22 @@ public class TripletsParser {
 		BufferedReader br = new BufferedReader(new FileReader(
 				"res/kaggle_visible_evaluation_triplets.txt"));
 		BufferedWriter wr = new BufferedWriter(new FileWriter(
-				"res/kaggle_visible_evaluation_triplets_new.csv"));
+				"res/kaggle_visible_evaluation_triplets.csv"));
 		//kaggle_visible_evaluation_triplets
 		//song_train_triplets
-		//long id=48373587;
+		long id=0;
+		String currentUser="";
+		int currentId=0;
 		try {
 			String line = br.readLine();
 			while (line != null) {
 				String[] split = line.split("\t");
-				
+				if(!split[0].equals(currentUser)){
+					currentId++;
+					currentUser=split[0];
+				}
 					wr.write(split[0]+","+songmap.get(split[1])+","+split[2]+"\n");
-				//id++;
+				id++;
 				
 				line = br.readLine();
 			}
