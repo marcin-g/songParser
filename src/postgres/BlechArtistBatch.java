@@ -26,4 +26,22 @@ public class BlechArtistBatch extends AbstractBatch {
 		return rs;
 	}
 
+	public ResultSet loadTracks() throws SQLException {
+		Statement stmt = connection.createStatement();
+		ResultSet rs = stmt.executeQuery("SELECT * FROM tracks_truncated");
+		return rs;
+	}
+	
+	public ResultSet loadArtistsMbtags() throws SQLException {
+		Statement stmt = connection.createStatement();
+		ResultSet rs = stmt.executeQuery("SELECT * FROM artist_mbtags_truncated");
+		return rs;
+	}
+	
+	public ResultSet loadArtistsTerms() throws SQLException {
+		Statement stmt = connection.createStatement();
+		ResultSet rs = stmt.executeQuery("SELECT * FROM artist_terms_truncated");
+		return rs;
+	}	
+	
 }
