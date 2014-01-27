@@ -1,13 +1,18 @@
 package algorithm;
 
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.PriorityQueue;
 
+import algorithm.Jaccard.Pair;
 import postgres.BlechArtistBatch;
 
 public class Blech {
@@ -19,7 +24,17 @@ public class Blech {
 		String album;
 		double popularity = 0.0;
 		double hotttnesss;
-		String artist;
+		int artist;
+	}
+
+	public static class Pair {
+		int index;
+		double value;
+
+		Pair(int i, double v) {
+			index = i;
+			value = v;
+		}
 	}
 
 	static final int ARTISTS_COUNT = 30327;
@@ -31,7 +46,9 @@ public class Blech {
 	static ArrayList<String> artists = new ArrayList<String>();
 	static HashMap<String, Integer> artistsMap = new HashMap<String, Integer>();
 	static HashMap<String, Integer> songsMap = new HashMap<String, Integer>();
+	static HashMap<String, Integer> usersMap = new HashMap<String, Integer>();
 	static String[] songsHashes = new String[SONGS_MAX_ID + 1];
+	static double[] songRating = new double[500];
 
 	static final double artistsTermsMinimumFreq = 0.5;
 	static final double artistsTermsMinimumWeight = 0.5;
@@ -40,13 +57,25 @@ public class Blech {
 	static final double artistsSimilarityWeight = 5.0;
 	static final double artistsTermsWeight = 5.0;
 
-	static final double sameAlbumWeight = 5.0;
+	static final double maxArtistsSimilarity = artistsMbtagsWeight + artistsSimilarityWeight + artistsTermsWeight;
 
-	static final double maxArtistsSimilarity = 15.0;
+	static final double maxStartPositionBonus = 500.0;
+	static final double maxFinalSongBonus = 5.0;
+
+	static final double maxAlbumBonus = 5.0;
+	static final double maxYearBonus = 5.0;
+	static final double maxEnergyBonus = 5.0;
+	static final double maxDanceabilityBonus = 5.0;
+	static final double maxArtistBonus = 25.0;
+	static final double maxHotttnesssBonus = 5.0;
+
+	static final double maxSongBonus = maxAlbumBonus + maxYearBonus + maxEnergyBonus + maxDanceabilityBonus
+			+ maxArtistBonus + maxHotttnesssBonus;
 
 	static double artistsSimilarity[] = new double[(int) (((double) ARTISTS_COUNT / 2.0) * ((double) ARTISTS_COUNT - 1.0))];
 	static ArrayList<String>[] mbtags = (ArrayList<String>[]) new ArrayList[ARTISTS_COUNT];
 	static ArrayList<String>[] terms = (ArrayList<String>[]) new ArrayList[ARTISTS_COUNT];
+	static ArrayList<Integer>[] userSongs = (ArrayList<Integer>[]) new ArrayList[110000];
 	static Song[] songs = new Song[SONGS_MAX_ID + 1];
 	static long startTime, stopTime;
 
@@ -62,14 +91,14 @@ public class Blech {
 			k++;
 		}
 		stopTime = System.currentTimeMillis();
-		System.out.println("Wczytałem artystów..");
+		System.out.println("Wczytałem listę artystów..");
 		System.out.println("  Czas: " + (stopTime - startTime) / 1000 + " s.");
 	}
 
 	static void loadSimilarArtists() throws SQLException {
+		startTime = System.currentTimeMillis();
 		ResultSet rs;
 		int id1, id2;
-		startTime = System.currentTimeMillis();
 		int k = 0;
 		rs = batch.loadSimilarArtists();
 		while (rs.next()) {
@@ -198,28 +227,29 @@ public class Blech {
 
 	static double compareSongs(Song s1, Song s2) {
 		if (s1 == null || s2 == null)
-			return 0;
+			return 0.3;
 		double result = 0;
 		// album
 		if (s1.album.equals(s2.album))
-			result += sameAlbumWeight;
+			result += maxAlbumBonus;
 
 		// year
-		result += Math.max(0, 5 - Math.abs(s1.year - s2.year) / 3);
+		result += Math.max(0, maxYearBonus - (maxYearBonus / 5.0) * Math.abs(s1.year - s2.year) / 3);
 
 		// danceability
-		result += Math.max(0, 5 - Math.abs(s1.danceability - s2.danceability) * 10);
+		result += Math.max(0,
+				maxDanceabilityBonus - (maxDanceabilityBonus / 5.0) * Math.abs(s1.danceability - s2.danceability) * 10);
 
 		// energy
-		result += Math.max(0, 5 - Math.abs(s1.energy - s2.energy) * 10);
+		result += Math.max(0, maxEnergyBonus - (maxEnergyBonus / 5.0) * Math.abs(s1.energy - s2.energy) * 10);
 
 		// artist
-		result += compareArtists(artistsMap.get(s1.artist), artistsMap.get(s2.artist));
+		result += compareArtists(s1.artist, s2.artist) * maxArtistBonus;
 
 		// hotttnesss
-		result += s2.hotttnesss * 5;
+		result += s2.hotttnesss * maxHotttnesssBonus;
 
-		return result;
+		return result / maxSongBonus;
 	}
 
 	static void loadSongs() throws IOException {
@@ -235,7 +265,7 @@ public class Blech {
 		}
 		br.close();
 		stopTime = System.currentTimeMillis();
-		System.out.println("Wczytałem songi.");
+		System.out.println("Wczytałem listę songów.");
 		System.out.println("  Czas: " + (stopTime - startTime) / 1000 + " s.");
 	}
 
@@ -250,7 +280,7 @@ public class Blech {
 			int id = songsMap.get(song_id);
 			if (songs[id] == null)
 				songs[id] = new Song();
-			songs[id].artist = rs.getString("artist_id");
+			songs[id].artist = artistsMap.get(rs.getString("artist_id"));
 			songs[id].danceability = rs.getDouble("danceability");
 			songs[id].energy = rs.getDouble("energy");
 			songs[id].album = rs.getString("release");
@@ -263,14 +293,93 @@ public class Blech {
 		System.out.println("  Czas: " + (stopTime - startTime) / 1000 + " s.");
 	}
 
+	static void saveArtistsSimilarity() throws FileNotFoundException {
+		startTime = System.currentTimeMillis();
+
+		PrintWriter out = new PrintWriter("/home/kailip/EDWD/MSDC/artistsSimilarity.txt");
+		for (int id1 = 0; id1 < ARTISTS_COUNT; id1++) {
+			for (int id2 = id1 + 1; id2 < ARTISTS_COUNT; id2++) {
+				int index = ((id1 + 1) * id1) / 2 + (id2 - id1 - 1);
+				if (artistsSimilarity[index] != 0) {
+					out.println(index + " " + artistsSimilarity[index]);
+				}
+			}
+
+		}
+
+		stopTime = System.currentTimeMillis();
+		System.out.println("Zapisałem podobieństwo artystów do pliku.");
+		System.out.println("  Czas: " + (stopTime - startTime) / 1000 + " s.");
+
+	}
+
+	static void loadArtistsSimilarity() throws IOException {
+		startTime = System.currentTimeMillis();
+
+		BufferedReader br = new BufferedReader(new FileReader("/home/kailip/EDWD/MSDC/artistsSimilarity.txt"));
+		String line;
+		while ((line = br.readLine()) != null) {
+			String[] strings = line.split("\\s+");
+			int index = Integer.parseInt(strings[0]);
+			double similarity = Double.parseDouble(strings[1]);
+			artistsSimilarity[index] = similarity;
+		}
+
+		stopTime = System.currentTimeMillis();
+		System.out.println("Wczytałem podobieństwo artystów z pliku.");
+		System.out.println("  Czas: " + (stopTime - startTime) / 1000 + " s.");
+	}
+
+	static void loadUsers() throws IOException {
+		startTime = System.currentTimeMillis();
+
+		BufferedReader br = new BufferedReader(new FileReader("/home/kailip/EDWD/MSDC/inclass_kaggle_users.txt"));
+		String line;
+		int x = 0;
+		while ((line = br.readLine()) != null) {
+			userSongs[x] = new ArrayList<Integer>();
+			usersMap.put(line, x);
+			x++;
+		}
+
+		stopTime = System.currentTimeMillis();
+		System.out.println("Wczytałem listę userów z pliku.");
+		System.out.println("  Czas: " + (stopTime - startTime) / 1000 + " s.");
+	}
+
+	static void loadTriplets() throws IOException {
+		startTime = System.currentTimeMillis();
+
+		BufferedReader br = new BufferedReader(new FileReader(
+				"/home/kailip/EDWD/MSDC/inclass_kaggle_visible_evaluation_triplets.txt"));
+		String line;
+		while ((line = br.readLine()) != null) {
+			String[] strings = line.split("\\s+");
+			String user = strings[0];
+			String song = strings[1];
+			int userId = usersMap.get(user);
+			int songId = songsMap.get(song);
+			userSongs[userId].add(songId);
+
+		}
+
+		stopTime = System.currentTimeMillis();
+		System.out.println("Wczytałem triplety z pliku.");
+		System.out.println("  Czas: " + (stopTime - startTime) / 1000 + " s.");
+	}
+
 	static void loadData() {
 		try {
 			loadArtists();
 			loadSimilarArtists();
-			// loadArtistsMbtags();
-			// loadArtistsTerms();
+			loadArtistsMbtags();
+			loadArtistsTerms();
+			// saveArtistsSimilarity();
+			// loadArtistsSimilarity();
 			loadSongs();
 			loadTracks();
+			loadUsers();
+			loadTriplets();
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
@@ -278,25 +387,79 @@ public class Blech {
 		}
 	}
 
-	private static void calculateSongsForSong(String songId, ArrayList<Integer> topSongs) {
-		int id = songsMap.get(songId);
+	private static void doEverything() throws IOException {
+		startTime = System.currentTimeMillis();
+		PrintWriter out = new PrintWriter("/home/kailip/EDWD/MSDC/new.csv");
+		out.println("Id,Expected");
+		BufferedReader br = new BufferedReader(new FileReader("/home/kailip/EDWD/MSDC/jaccardSongResultsTestSong.csv"));
+		String line;
+		br.readLine();
+		int ll = 0;
+		while ((line = br.readLine()) != null) {
+			// System.out.println("Line: " + (ll++));
+
+			// for (int y = 0; y < 1000; y++) {
+			// line = br.readLine();
+			line = line.replace(",", " ");
+			// System.out.println(line);
+			// System.out.println();
+			ArrayList<Integer> topSongs = new ArrayList<Integer>();
+			String[] strings = line.split("\\s+");
+			int userId = usersMap.get(strings[0]);
+			out.print(strings[0] + ",");
+			int topSongsCount = strings.length - 1;
+			for (int x = 0; x < topSongsCount; x++) {
+				songRating[x] = 0.0;
+				topSongs.add(Integer.parseInt(strings[x + 1]));
+			}
+			for (int x = 0; x < userSongs[userId].size(); x++) {
+				calculateSongsForSong(userSongs[userId].get(x), topSongs);
+			}
+			PriorityQueue<Pair> Q = new PriorityQueue<Pair>(500, new Comparator<Pair>() {
+				@Override
+				public int compare(Pair o1, Pair o2) {
+					return ((Double) o2.value).compareTo((double) o1.value);
+				}
+			});
+
+			for (int x = 0; x < topSongsCount; x++) {
+				Q.add(new Pair(topSongs.get(x), songRating[x]));
+			}
+			for (int x = 0; x < topSongsCount; x++) {
+				Pair pair = Q.poll();
+				// if (x == 0)
+				// System.out.println("Best score: " + pair.value);
+				out.print(pair.index);
+				if (x < topSongsCount - 1)
+					out.print(" ");
+			}
+			out.println();
+		}
+		out.close();
+
+		stopTime = System.currentTimeMillis();
+		System.out.println("Skończyłem robić wszystko.");
+		System.out.println("  Czas: " + (stopTime - startTime) / 1000 + " s.");
+	}
+
+	private static void calculateSongsForSong(int songId, ArrayList<Integer> topSongs) {
 		for (int x = 0; x < topSongs.size(); x++) {
-			double cmp = compareSongs(songs[id], songs[topSongs.get(x)]);
-			cmp += (500 - x) / 20;
-			System.out.println("Porównanie " + id + " z " + topSongs.get(x) + ":");
-			System.out.println("  wynik: " + cmp);
+			double cmp = compareSongs(songs[songId], songs[topSongs.get(x)]) * maxFinalSongBonus;
+			cmp += maxStartPositionBonus * ((500.0 - (double) x) / 500.0);
+			if (cmp > songRating[x])
+				songRating[x] = cmp;
+			// System.out.println("Porównanie " + songId + " z " +
+			// topSongs.get(x) + ":");
+			// System.out.println("  wynik: " + cmp);
 		}
 
 	}
 
 	public static void main(String[] args) throws Exception {
 		loadData();
+		doEverything();
 
-		ArrayList<Integer> al = new ArrayList<Integer>();
-		al.add(91177);
-		al.add(12985);
-
-		calculateSongsForSong("SOGPNGN12A8C143969", al);
+		// calculateSongsForSong("SOGPNGN12A8C143969", al);
 		// System.out.println("Unikalnych artystów: " + artists.size());
 		// System.out.println("Artysta nr 6: " + artists.get(6));
 		// System.out.println("Czy się zgadza.. : " +
