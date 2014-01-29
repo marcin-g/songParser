@@ -16,7 +16,8 @@ public class TripletsParser {
 		//train_triplets
 		//kaggle_visible_evaluation_triplets
 		HashMap<String, Integer> map=new HashMap<>();
-		long start = System.nanoTime();    
+		long start = System.nanoTime(); 
+		int k=0;
 		try {
 			String line = br1.readLine();
 			while (line != null) {
@@ -38,7 +39,7 @@ public class TripletsParser {
 		try {
 			String line = br2.readLine();
 			while (line != null) {
-				String[] split = line.split(",");
+				String[] split = line.split(";");
 				songmap.put(split[1], Integer.parseInt(split[0]));
 				line = br2.readLine();
 			}
@@ -50,9 +51,9 @@ public class TripletsParser {
 		}
 
 		BufferedReader br = new BufferedReader(new FileReader(
-				"res/kaggle_visible_evaluation_triplets.txt"));
+				"res/report/100ktrain_triplets.txt"));
 		BufferedWriter wr = new BufferedWriter(new FileWriter(
-				"res/kaggle_visible_evaluation_triplets.csv"));
+				"res/report/100ktrain_triplets.csv"));
 		//kaggle_visible_evaluation_triplets
 		//song_train_triplets
 		long id=0;
@@ -66,7 +67,7 @@ public class TripletsParser {
 					currentId++;
 					currentUser=split[0];
 				}
-					wr.write(split[0]+","+songmap.get(split[1])+","+split[2]+"\n");
+					wr.write(map.get(split[0])+","+songmap.get(split[1])+","+split[2]+"\n");
 				id++;
 				
 				line = br.readLine();
