@@ -47,6 +47,7 @@ public class Blech {
 	static final int TRACKS_COUNT = 384541;
 	static final int SONGS_COUNT = 383833;
 	static final int SONGS_MAX_ID = 386213;
+	static final int USERS_COUNT = 110000;
 
 	static BlechArtistBatch batch = new BlechArtistBatch();
 	static ArrayList<String> artists = new ArrayList<String>();
@@ -96,8 +97,8 @@ public class Blech {
 	static double artistsSimilarity[] = new double[(int) (((double) ARTISTS_COUNT / 2.0) * ((double) ARTISTS_COUNT - 1.0))];
 	static ArrayList<String>[] mbtags = (ArrayList<String>[]) new ArrayList[ARTISTS_COUNT];
 	static ArrayList<String>[] terms = (ArrayList<String>[]) new ArrayList[ARTISTS_COUNT];
-	static ArrayList<Integer>[] userSongs = (ArrayList<Integer>[]) new ArrayList[110000];
-	static ArrayList<Integer>[] userEvaluationSongs = (ArrayList<Integer>[]) new ArrayList[110000];
+	static ArrayList<Integer>[] userSongs = (ArrayList<Integer>[]) new ArrayList[USERS_COUNT];
+	static ArrayList<Integer>[] userEvaluationSongs = (ArrayList<Integer>[]) new ArrayList[USERS_COUNT];
 	static Song[] songs = new Song[SONGS_MAX_ID + 1];
 	static long startTime, stopTime;
 
@@ -371,7 +372,9 @@ public class Blech {
 
 	static void loadUsers() throws IOException {
 		startTime = System.currentTimeMillis();
+		// here
 		String path = "/home/kailip/EDWD/MSDC/inclass_kaggle_users.txt";
+		// String path = "/home/kailip/EDWD/MSDC/raport_kaggle_users.txt";
 		if (OLD)
 			path = "/home/kailip/EDWD/MSDC/kaggle_users.txt";
 		BufferedReader br = new BufferedReader(new FileReader(path));
@@ -390,11 +393,14 @@ public class Blech {
 	}
 
 	static void loadTriplets() throws IOException {
-		for (int x = 0; x < 110000; x++) {
+		for (int x = 0; x < USERS_COUNT; x++) {
 			userSongs[x].clear();
 		}
 		startTime = System.currentTimeMillis();
+		// here
 		String path = "/home/kailip/EDWD/MSDC/inclass_kaggle_visible_evaluation_triplets.txt";
+		// String path =
+		// "/home/kailip/EDWD/MSDC/raport_kaggle_visible_evaluation_triplets.txt";
 		if (OLD)
 			path = "/home/kailip/EDWD/MSDC/kaggle_visible_evaluation_triplets.txt";
 
@@ -426,6 +432,9 @@ public class Blech {
 		startTime = System.currentTimeMillis();
 
 		BufferedReader br = new BufferedReader(new FileReader("/home/kailip/EDWD/MSDC/kaggle_triplets_hidden.txt"));
+		// here
+		// BufferedReader br = new BufferedReader(new
+		// FileReader("/home/kailip/EDWD/MSDC/raport_kaggle_triplets_hidden.txt"));
 		String line;
 		int ll = 0;
 		while ((line = br.readLine()) != null) {
@@ -481,8 +490,8 @@ public class Blech {
 	private static void doEverything() throws IOException {
 		startTime = System.currentTimeMillis();
 		PrintWriter out = new PrintWriter("/home/kailip/EDWD/MSDC/new.csv");
-		// out.println("Id,Expected");
-		String path = "/home/kailip/EDWD/MSDC/currentBest.csv";
+		out.println("Id,Expected");
+		String path = "/home/kailip/EDWD/MSDC/old.csv";
 		if (OLD)
 			path = "/home/kailip/EDWD/MSDC/betterSongResultsTestKaggle.csv";
 		// path = "/home/kailip/EDWD/MSDC/output2.csv";
@@ -499,7 +508,7 @@ public class Blech {
 			ArrayList<Integer> topSongs = new ArrayList<Integer>();
 			String[] strings = line.split("\\s+");
 			int userId = usersMap.get(strings[0]);
-			// out.print(strings[0] + ",");
+			out.print(strings[0] + ",");
 			int topSongsCount = strings.length - 1;
 			for (int x = 0; x < topSongsCount; x++) {
 				songRating[x] = maxStartPositionBonus
@@ -531,16 +540,16 @@ public class Blech {
 				topSongsForMAP.add(pair.index);
 				// if (x < 5)
 				// System.out.println("Best score: " + pair.value);
-				// out.print(pair.index);
-				// if (x < topSongsCount - 1)
-				// out.print(" ");
+				out.print(pair.index);
+				if (x < topSongsCount - 1)
+					out.print(" ");
 			}
 
 			sumaDlaMapa += countAP(userId, topSongsForMAP);
 			out.println();
 		}
 		out.close();
-		double MAP = sumaDlaMapa / 110000.0;
+		double MAP = sumaDlaMapa / (double) USERS_COUNT;
 
 		// System.out.println("TimesCompared: " + timesCompared);
 		// System.out.println("TimesNull:     " + timesNull);
@@ -558,8 +567,8 @@ public class Blech {
 		startTime = System.currentTimeMillis();
 		PrintWriter out = new PrintWriter("/home/kailip/EDWD/MSDC/newnew.csv");
 		out.println("Id,Expected");
-		BufferedReader br = new BufferedReader(new FileReader("/home/kailip/EDWD/MSDC/jaccardSongResultsTestSong.csv"));
-		BufferedReader br2 = new BufferedReader(new FileReader("/home/kailip/EDWD/MSDC/inclass.csv"));
+		BufferedReader br = new BufferedReader(new FileReader("/home/kailip/EDWD/MSDC/jaccardProper80SongResult.csv"));
+		BufferedReader br2 = new BufferedReader(new FileReader("/home/kailip/EDWD/MSDC/kopia.csv"));
 		String line, line2;
 		br.readLine();
 		br2.readLine();
@@ -581,7 +590,7 @@ public class Blech {
 			if (topSongs.size() < 500) {
 				String[] strings2 = line2.split("\\s+");
 				int xx = 0;
-				while (topSongs.size() < 500) {
+				while (topSongs.size() < 500 && xx + 1 < strings2.length) {
 					xx++;
 					int song = Integer.parseInt(strings2[xx]);
 					if (topSongs.contains(song))
@@ -623,17 +632,21 @@ public class Blech {
 	public static void main(String[] args) throws Exception {
 		loadData();
 		System.out.println();
-		for (double x = 1.0; x <= 1; x += 1.0) {
-			tripletsImportanceRatio = 3.0;
-			stableSongsNumber = 12;// * 20;
-			minimumTripletListens = 1;
-			nullCompareValue = 0.5;
-			// maxArtistBonus = (double) x * 0.4;
-			// maxHotttnesssBonus = x;
-			calcParameters();
-			doEverything();
 
-		}
+				for (double x = 1.0; x <= 6; x += 1.0) {
+					// tripletsImportanceRatio = 3.0;
+					tripletsImportanceRatio = 8.0;
+					// stableSongsNumber = 13;// * 20;
+					stableSongsNumber = (int)x+10;// * 20;
+					minimumTripletListens = (int) 1;
+					nullCompareValue = 0.6;
+					// maxArtistBonus = (double) x * 0.4;
+					// maxHotttnesssBonus = x;
+					calcParameters();
+					doEverything();
+
+				}
+
 		// doEverything();
 		// doSomethingElse();
 
