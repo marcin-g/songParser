@@ -13,7 +13,7 @@ public class MapConverter {
 
 	public static void main(String[] args) throws Exception {
 		BufferedReader br1 = new BufferedReader(new FileReader(
-				"res/1.csv"));
+				"res/report/100ktrain_triplets.csv"));
 		// train_triplets
 		// kaggle_visible_evaluation_triplets
 		HashMap<String, LinkedList<Integer>> map=new HashMap<>();
@@ -44,7 +44,7 @@ public class MapConverter {
 
 			System.out.println("mape wykonano "+(System.currentTimeMillis()-start));
 			wr = new BufferedWriter(new FileWriter(
-					"res/new_map.csv"));
+					"res/report/100knew_map.csv"));
 			System.out.println("mape i zapis wykonano "+(System.currentTimeMillis()-start));
 			for (String key : map.keySet()) {
 				LinkedList<Integer> list=map.get(key);
@@ -59,10 +59,13 @@ public class MapConverter {
 			}
 			
 			
-		} catch (Exception e) {
+		} 
+		catch(Exception e){
+		 e.printStackTrace();
+		}
+		finally {
 			br1.close();
 			wr.close();
-			e.printStackTrace();
 		}
 	}
 }
